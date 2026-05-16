@@ -28,6 +28,8 @@ export const getClerkUserProfile = async (clerkUserId: string) => {
 export const syncAuthenticatedUser = async (clerkUserId: string) => {
   const profile = await getClerkUserProfile(clerkUserId);
 
+  // 1. VALIDASI DI AWAL (SANGAT PENTING!)
+  // Pastikan email ada sebelum digunakan untuk query database di bawah
   if (!profile.email) {
     throw new ApiError(
       HTTP_STATUS.UNPROCESSABLE_ENTITY,
@@ -35,6 +37,21 @@ export const syncAuthenticatedUser = async (clerkUserId: string) => {
     );
   }
 
+  // 2. Cek dulu apakah email ini sudah pernah terdaftar di database dengan clerk_id lain
+  const existingUserByEmail = await prisma.user.findUnique({
+    where: { email: profile.email }, // Aman karena sudah divalidasi di atas
+  });
+
+  // 3. Jika email ditemukan DAN clerk_id di DB berbeda dengan yang dikirim Clerk saat ini,
+  // artinya ada reset sesi/aplikasi. Kita update clerk_id lama menjadi yang baru agar tidak bentrok.
+  if (existingUserByEmail && existingUserByEmail.clerk_id !== profile.clerkId) {
+    await prisma.user.update({
+      where: { email: profile.email },
+      data: { clerk_id: profile.clerkId },
+    });
+  }
+
+  // 4. Setelah aman dari benturan email, jalankan upsert berbasis clerk_id seperti keinginanmu
   const user = await prisma.user.upsert({
     where: {
       clerk_id: profile.clerkId,
@@ -49,6 +66,7 @@ export const syncAuthenticatedUser = async (clerkUserId: string) => {
       name: profile.name,
       email: profile.email,
       image_url: profile.imageUrl,
+      points: 0, // Inisialisasi poin gamifikasi Potensia
     },
   });
 
@@ -58,6 +76,3 @@ export const syncAuthenticatedUser = async (clerkUserId: string) => {
   };
 };
 
-export const logoutClerkSession = async (sessionId: string) => {
-  return clerkClient.sessions.revokeSession(sessionId);
-};

@@ -87,30 +87,8 @@ Untuk endpoint auth/protected:
 Contoh:
 
 ```http
-GET /api/v1/auth/me
+GET /v1/auth/me
 Authorization: Bearer eyJ...
-```
-
-Untuk logout:
-
-```http
-POST /api/v1/auth/logout
-Authorization: Bearer eyJ...
-Content-Type: application/json
-```
-
-Body logout opsional:
-
-```json
-{}
-```
-
-Atau jika ingin mengirim manual:
-
-```json
-{
-  "sessionId": "sess_xxx"
-}
 ```
 
 ## Tugas Backend
@@ -124,7 +102,6 @@ Backend harus:
 - ambil profil user dari Clerk
 - sinkron user ke database
 - balas data user
-- revoke session saat logout
 
 ## Cara Backend Memvalidasi Token
 
@@ -145,22 +122,17 @@ Jika valid:
 
 ## Endpoint Backend Yang Dipakai
 
-### `GET /api/v1/auth/config`
+### `GET /v1/auth/config`
 
 - tanpa token
 - untuk cek konfigurasi auth
 
-### `GET /api/v1/auth/me`
+### `GET /v1/auth/me`
 
 - wajib bearer token
 - verifikasi token
 - sync user ke DB
 - balas data user
-
-### `POST /api/v1/auth/logout`
-
-- wajib bearer token
-- revoke session Clerk
 
 ## Contoh Response `/auth/me`
 
@@ -192,7 +164,7 @@ Jika valid:
   "meta": {
     "requestId": "uuid",
     "timestamp": "2026-05-16T00:00:00.000Z",
-    "path": "/api/v1/auth/me",
+    "path": "/v1/auth/me",
     "method": "GET"
   }
 }
@@ -203,7 +175,7 @@ Jika valid:
 Saat login pertama:
 
 - frontend berhasil login lewat Google + Clerk
-- frontend memanggil `/api/v1/auth/me`
+- frontend memanggil `/v1/auth/me`
 - backend memanggil `syncAuthenticatedUser()`
 - jika `clerk_id` belum ada di DB, backend membuat user baru
 
@@ -228,7 +200,6 @@ Backend ini tidak:
 
 - verifikasi token
 - ambil user profile
-- revoke session bila logout
 
 ### Backend ke Frontend
 
@@ -250,5 +221,4 @@ Backend ini tidak:
 - `CLERK_SECRET_KEY` valid
 - middleware auth aktif
 - endpoint `/auth/me` aktif
-- endpoint `/auth/logout` aktif
 - tabel `User` punya kolom `clerk_id`

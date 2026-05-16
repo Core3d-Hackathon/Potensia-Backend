@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
 import { HTTP_STATUS } from "../constants/http-status";
-import { logoutClerkSession, syncAuthenticatedUser } from "../services/auth.service";
+import { syncAuthenticatedUser } from "../services/auth.service";
 import { sendSuccess } from "../utils/api-response";
 import { ApiError } from "../utils/api-error";
 import { buildResponseMeta } from "../utils/response-meta";
@@ -35,36 +35,6 @@ export const getCurrentUser = async (req: Request, res: Response) => {
   });
 };
 
-export const logout = async (
-  req: Request,
-  res: Response,
-) => {
-  const { sessionId: bodySessionId } = req.body as { sessionId?: string };
-  const sessionId = bodySessionId ?? req.auth?.sessionId;
-
-  if (!sessionId) {
-    throw new ApiError(
-      HTTP_STATUS.BAD_REQUEST,
-      "sessionId is required to logout this session",
-    );
-  }
-
-  const revokedSession = await logoutClerkSession(sessionId);
-
-  return sendSuccess(res, {
-    statusCode: HTTP_STATUS.OK,
-    message: "Logout successful",
-    data: {
-      session: {
-        id: revokedSession.id,
-        userId: revokedSession.userId,
-        status: revokedSession.status,
-      },
-    },
-    meta: buildResponseMeta(req),
-  });
-};
-
 export const getAuthConfig = async (req: Request, res: Response) => {
   return sendSuccess(res, {
     statusCode: HTTP_STATUS.OK,
@@ -76,10 +46,10 @@ export const getAuthConfig = async (req: Request, res: Response) => {
       notes: [
         "Frontend should start login with Clerk using the oauth_google strategy.",
         "Backend accepts the Clerk bearer token after Google sign-in succeeds.",
+        "Frontend should handle logout directly with Clerk.",
       ],
       endpoints: {
-        me: "/api/v1/auth/me",
-        logout: "/api/v1/auth/logout",
+        me: "/v1/auth/me",
       },
     },
     meta: buildResponseMeta(req),

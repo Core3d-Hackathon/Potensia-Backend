@@ -62,7 +62,7 @@ Saat ini sebagian endpoint auth menggunakan middleware `authenticate`.
 Endpoint yang memerlukan bearer token:
 
 - `GET /v1/auth/me`
-- `POST /v1/auth/logout`
+- `GET /v1/leaderboard/me`
 
 Header:
 
@@ -130,11 +130,11 @@ Contoh response:
     "loginFlow": "frontend_redirect",
     "notes": [
       "Frontend should start login with Clerk using the oauth_google strategy.",
-      "Backend accepts the Clerk bearer token after Google sign-in succeeds."
+      "Backend accepts the Clerk bearer token after Google sign-in succeeds.",
+      "Frontend should handle logout directly with Clerk."
     ],
     "endpoints": {
-      "me": "/api/v1/auth/me",
-      "logout": "/api/v1/auth/logout"
+      "me": "/v1/auth/me"
     }
   }
 }
@@ -185,9 +185,51 @@ Contoh response:
 }
 ```
 
-#### `POST /v1/auth/logout`
+### 4. Leaderboard
 
-Logout sesi Clerk aktif.
+#### `GET /v1/leaderboard`
+
+Mengambil top 10 user dengan poin tertinggi untuk kebutuhan gamifikasi.
+
+Auth required: `No`
+
+Data yang ditampilkan per user:
+
+- `rank`
+- `id`
+- `clerkId`
+- `name`
+- `email`
+- `imageUrl`
+- `totalPoints`
+- `totalModules`
+
+Contoh response:
+
+```json
+{
+  "success": true,
+  "message": "Leaderboard fetched successfully",
+  "data": {
+    "leaderboard": [
+      {
+        "rank": 1,
+        "id": "uuid",
+        "clerkId": "user_xxx",
+        "name": "John Doe",
+        "email": "john@example.com",
+        "imageUrl": "https://example.com/image.png",
+        "totalPoints": 120,
+        "totalModules": 5
+      }
+    ]
+  }
+}
+```
+
+#### `GET /v1/leaderboard/me`
+
+Mengambil peringkat user yang sedang login.
 
 Auth required: `Yes`
 
@@ -197,35 +239,29 @@ Header:
 Authorization: Bearer <clerk_token>
 ```
 
-Body:
+Data yang ditampilkan:
 
-```json
-{
-  "sessionId": "sess_xxx"
-}
-```
-
-Catatan:
-
-- Jika `sessionId` tidak dikirim di body, backend akan mencoba memakai `sessionId` dari auth context.
+- `name`
+- `rank`
+- `totalPoints`
 
 Contoh response:
 
 ```json
 {
   "success": true,
-  "message": "Logout successful",
+  "message": "Authenticated user leaderboard rank fetched successfully",
   "data": {
-    "session": {
-      "id": "sess_xxx",
-      "userId": "user_xxx",
-      "status": "revoked"
+    "user": {
+      "name": "John Doe",
+      "rank": 4,
+      "totalPoints": 120
     }
   }
 }
 ```
 
-### 4. Curriculum
+### 5. Curriculum
 
 Semua endpoint curriculum saat ini belum memakai auth middleware, jadi bisa dipanggil langsung.
 
@@ -479,7 +515,8 @@ GET /v1/curriculum/fase/B/subjects/Matematika/capaian
 - `GET /v1/health`
 - `GET /v1/auth/config`
 - `GET /v1/auth/me`
-- `POST /v1/auth/logout`
+- `GET /v1/leaderboard`
+- `GET /v1/leaderboard/me`
 - `GET /v1/curriculum/jenjang`
 - `GET /v1/curriculum/fase`
 - `GET /v1/curriculum/jenjang/:jenjangKey/fase`

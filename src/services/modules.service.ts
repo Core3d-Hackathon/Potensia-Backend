@@ -65,12 +65,28 @@ export const createModuleService = async (input: CreateModuleInput) => {
   });
 };
 
-export const getModulesService = async () => {
+export const getModulesService = async (clerkUserId: string) => {
   return prisma.module.findMany({
+    where: {
+      author: {
+        clerk_id: clerkUserId,
+      },
+    },
     orderBy: {
       createdAt: "desc",
     },
-    include: {
+    select: {
+      id: true,
+      judul_modul: true,
+      jenjang: true,
+      fase_kelas: true,
+      mapel: true,
+      materi: true,
+      kategori_wilayah: true,
+      status: true,
+      upvote_count: true,
+      createdAt: true,
+      updatedAt: true,
       author: {
         select: {
           id: true,

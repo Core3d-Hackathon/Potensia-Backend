@@ -102,7 +102,12 @@ export const createModule = async (req: Request, res: Response) => {
 };
 
 export const getModules = async (req: Request, res: Response) => {
-  const modules = await getModulesService();
+  const clerkUserId = req.auth?.clerkUserId;
+  if (!clerkUserId) {
+    throw new ApiError(HTTP_STATUS.UNAUTHORIZED, "Unauthorized");
+  }
+
+  const modules = await getModulesService(clerkUserId);
   return sendSuccess(res, {
     statusCode: HTTP_STATUS.OK,
     message: "Modules fetched",

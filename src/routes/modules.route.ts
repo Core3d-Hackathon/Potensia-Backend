@@ -26,7 +26,7 @@ import {
 const modulesRouter = Router();
 
 // CRUD Database
-modulesRouter.get("/", asyncHandler(getModules));
+modulesRouter.get("/", authenticate, asyncHandler(getModules));
 modulesRouter.post(
   "/",
   authenticate,

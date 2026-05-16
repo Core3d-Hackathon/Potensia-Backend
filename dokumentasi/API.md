@@ -508,9 +508,14 @@ Contoh response:
 
 #### `GET /v1/modules`
 
-Mengambil seluruh daftar modul yang ada di database.
+Mengambil seluruh daftar modul (Arsip) yang pernah dibuat oleh pengguna yang sedang login.
 
-Auth required: `No`
+Auth required: `Yes`
+
+Header:
+```http
+Authorization: Bearer <clerk_token>
+```
 
 #### `GET /v1/modules/:id`
 

@@ -13,11 +13,11 @@ export const getDashboardDataService = async (clerkUserId: string) => {
   }
 
   const totalModules = await prisma.module.count({
-    where: { author_id: user.id },
+    where: { author_id: user.id }, // HANYA menghitung jumlah modul milik user yang sedang login
   });
 
   const recentModules = await prisma.module.findMany({
-    where: { author_id: user.id },
+    where: { author_id: user.id }, // HANYA mengambil aktivitas/modul milik user sendiri
     orderBy: { createdAt: "desc" },
     take: 5,
     select: {

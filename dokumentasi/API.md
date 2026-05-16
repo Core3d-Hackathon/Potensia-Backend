@@ -633,6 +633,46 @@ Contoh Response (Jika Upvote Dibatalkan):
 }
 ```
 
+### 8. Dashboard
+
+#### `GET /v1/dashboard`
+
+Mengambil data statistik user yang sedang login untuk ditampilkan di halaman Dashboard (Total Poin, Total Modul, dan 5 Aktifitas Modul Terakhir).
+
+Auth required: `Yes`
+
+Header:
+```http
+Authorization: Bearer <clerk_token>
+```
+
+Contoh Response:
+```json
+{
+  "success": true,
+  "message": "Dashboard data fetched successfully",
+  "data": {
+    "totalPoints": 120,
+    "totalModules": 8,
+    "recentModules": [
+      {
+        "id": "uuid",
+        "judul_modul": "Modul Matematika SD",
+        "jenjang": "sd",
+        "fase_kelas": "A",
+        "mapel": "Matematika",
+        "materi": "Bilangan",
+        "kategori_wilayah": "Pesisir",
+        "status": "DRAFT",
+        "upvote_count": 0,
+        "createdAt": "2026-05-16T10:00:00.000Z",
+        "updatedAt": "2026-05-16T10:00:00.000Z"
+      }
+    ]
+  }
+}
+```
+
 ## Contoh Urutan Pemakaian Frontend
 
 ### 1. Ambil jenjang
@@ -665,6 +705,7 @@ GET /v1/curriculum/fase/B/subjects/Matematika/capaian
 - `GET /v1/health`
 - `GET /v1/auth/config`
 - `GET /v1/auth/me`
+- `GET /v1/dashboard`
 - `GET /v1/leaderboard`
 - `GET /v1/leaderboard/me`
 - `GET /v1/curriculum/jenjang`

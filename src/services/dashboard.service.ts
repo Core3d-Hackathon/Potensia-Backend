@@ -1,0 +1,43 @@
+import { prisma } from "../lib/prisma";
+import { ApiError } from "../utils/api-error";
+import { HTTP_STATUS } from "../constants/http-status";
+
+export const getDashboardDataService = async (clerkUserId: string) => {
+  const user = await prisma.user.findUnique({
+    where: { clerk_id: clerkUserId },
+    select: { id: true, points: true },
+  });
+
+  if (!user) {
+    throw new ApiError(HTTP_STATUS.NOT_FOUND, "User tidak ditemukan");
+  }
+
+  const totalModules = await prisma.module.count({
+    where: { author_id: user.id },
+  });
+
+  const recentModules = await prisma.module.findMany({
+    where: { author_id: user.id },
+    orderBy: { createdAt: "desc" },
+    take: 5,
+    select: {
+      id: true,
+      judul_modul: true,
+      jenjang: true,
+      fase_kelas: true,
+      mapel: true,
+      materi: true,
+      kategori_wilayah: true,
+      status: true,
+      upvote_count: true,
+      createdAt: true,
+      updatedAt: true,
+    },
+  });
+
+  return {
+    totalPoints: user.points,
+    totalModules,
+    recentModules,
+  };
+};

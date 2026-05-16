@@ -96,9 +96,11 @@ export const generateATPDraft = async (payload: GenerateAtpInput) => {
   const tps = JSON.stringify(payload.tujuan_pembelajaran_terpilih);
 
   const prompt = `
+Anda adalah ahli penyusun RPP Kurikulum Merdeka.
 Tugas: Susun Tujuan Pembelajaran (TP) berikut menjadi Alur Pertemuan (ATP) yang logis.
+Konteks: ${payload.jenjang} Kelas ${payload.fase_kelas}, Mapel ${payload.mapel}, Materi: ${payload.materi}.
 Total Pertemuan: ${payload.jumlah_pertemuan}. Alokasi Waktu: ${payload.alokasi_waktu}.
-Daftar TP: ${tps}
+Daftar TP Terpilih: ${tps}
 
 OUTPUT WAJIB JSON VALID (TANPA MARKDOWN):
 {

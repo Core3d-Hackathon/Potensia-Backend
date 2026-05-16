@@ -23,7 +23,7 @@ modulesRouter.get(
 
 modulesRouter.post(
   "/generate",
-  validateRequest(generateModuleSchema),
+  validateRequest({ body: generateModuleSchema }),
   asyncHandler(generateModule),
 );
 

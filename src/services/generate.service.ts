@@ -19,8 +19,18 @@ const getRandomApiKey = (): string => {
     .map((k) => k.trim())
     .filter(Boolean);
 
+  if (keys.length === 0) {
+    throw new Error("No valid Gemini API keys were found in environment variables");
+  }
+
   const randomIndex = Math.floor(Math.random() * keys.length);
-  return keys[randomIndex];
+  const selectedKey = keys[randomIndex];
+
+  if (!selectedKey) {
+    throw new Error("Failed to select a Gemini API key");
+  }
+
+  return selectedKey;
 };
 
 const formatCapaian = (capaian: Record<string, string> | null) => {

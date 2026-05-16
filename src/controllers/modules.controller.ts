@@ -11,6 +11,24 @@ import {
 import { generateModuleDraft } from "../services/generate.service";
 import { prisma } from "../lib/prisma";
 
+const getRequiredParam = (value: string | string[] | undefined, paramName: string): string => {
+  if (!value) {
+    throw new ApiError(HTTP_STATUS.BAD_REQUEST, `Route param '${paramName}' is required`);
+  }
+
+  if (Array.isArray(value)) {
+    const firstValue = value[0];
+
+    if (!firstValue) {
+      throw new ApiError(HTTP_STATUS.BAD_REQUEST, `Route param '${paramName}' is required`);
+    }
+
+    return firstValue;
+  }
+
+  return value;
+};
+
 export const createModule = async (req: Request, res: Response) => {
   if (!req.auth?.clerkUserId) {
     throw new ApiError(HTTP_STATUS.UNAUTHORIZED, "Unauthorized");
@@ -58,7 +76,8 @@ export const getModules = async (req: Request, res: Response) => {
 };
 
 export const getModuleById = async (req: Request, res: Response) => {
-  const module = await getModuleByIdService(req.params.id);
+  const moduleId = getRequiredParam(req.params.id, "id");
+  const module = await getModuleByIdService(moduleId);
 
   if (!module) {
     throw new ApiError(HTTP_STATUS.NOT_FOUND, "Module not found");

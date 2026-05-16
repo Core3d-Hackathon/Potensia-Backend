@@ -10,7 +10,6 @@ import {
   publishModuleService,
 } from "../services/modules.service";
 import { generateTPDraft, generateATPDraft, generateModulDraft } from "../services/generate.service";
-import { prisma } from "../lib/prisma";
 
 const getRequiredParam = (value: string | string[] | undefined, paramName: string): string => {
   if (!value) {
@@ -49,12 +48,13 @@ export const generateModul = async (req: Request, res: Response) => {
 // DATABASE HANDLERS
 // ==========================================
 export const createModule = async (req: Request, res: Response) => {
-  if (!req.auth?.clerkUserId) throw new ApiError(HTTP_STATUS.UNAUTHORIZED, "Unauthorized");
-  const user = await prisma.user.findUnique({ where: { clerk_id: req.auth.clerkUserId } });
-  if (!user) throw new ApiError(HTTP_STATUS.NOT_FOUND, "Authenticated user not found");
+  // 1. Ambil id KTP Clerk dari middleware authentication
+  const clerkUserId = req.auth?.clerkUserId;
+  if (!clerkUserId) throw new ApiError(HTTP_STATUS.UNAUTHORIZED, "Unauthorized");
 
+  // 2. Oper langsung ke service tanpa perlu kueri manual ganda di controller
   const module = await createModuleService({
-    authorId: user.id,
+    clerkUserId: clerkUserId, 
     judul_modul: req.body.judul_modul,
     jenjang: req.body.jenjang,
     fase_kelas: req.body.fase_kelas,
@@ -65,7 +65,7 @@ export const createModule = async (req: Request, res: Response) => {
     status: req.body.status ?? "DRAFT",
   });
 
-  return sendSuccess(res, { statusCode: HTTP_STATUS.CREATED, message: "Module saved", data: module, meta: buildResponseMeta(req) });
+  return sendSuccess(res, { statusCode: HTTP_STATUS.CREATED, message: "Module saved successfully", data: module, meta: buildResponseMeta(req) });
 };
 
 export const getModules = async (req: Request, res: Response) => {
@@ -90,20 +90,13 @@ export const getModuleById = async (req: Request, res: Response) => {
 };
 
 export const publishModule = async (req: Request, res: Response) => {
-  if (!req.auth?.clerkUserId) {
+  const clerkUserId = req.auth?.clerkUserId;
+  if (!clerkUserId) {
     throw new ApiError(HTTP_STATUS.UNAUTHORIZED, "Unauthorized");
   }
 
-  const user = await prisma.user.findUnique({
-    where: { clerk_id: req.auth.clerkUserId },
-  });
-
-  if (!user) {
-    throw new ApiError(HTTP_STATUS.NOT_FOUND, "Authenticated user not found");
-  }
-
   const moduleId = getRequiredParam(req.params.id, "id");
-  const module = await publishModuleService(moduleId, user.id);
+  const module = await publishModuleService(moduleId, clerkUserId);
 
   return sendSuccess(res, {
     statusCode: HTTP_STATUS.OK,

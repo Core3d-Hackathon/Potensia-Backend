@@ -1,6 +1,10 @@
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import { getCapaianByFaseAndSubject, FaseCode } from "../data/curriculumData";
-import { GenerateTpInput, GenerateAtpInput, GenerateModulAjarInput } from "../schemas/generate.schema";
+import {
+  GenerateTpInput,
+  GenerateAtpInput,
+  GenerateModulAjarInput,
+} from "../schemas/generate.schema";
 
 // ==========================================
 // 1. HELPERS: API Keys & JSON Extractor
@@ -8,23 +12,34 @@ import { GenerateTpInput, GenerateAtpInput, GenerateModulAjarInput } from "../sc
 const getRandomApiKey = (): string => {
   const keysString = process.env.GEMINI_API_KEYS || process.env.GEMINI_API_KEY;
   if (!keysString) throw new Error("GEMINI_API_KEYS is not configured in env");
-  const keys = keysString.split(",").map((k) => k.trim()).filter(Boolean);
-  
+
+  // 🌟 PERBAIKAN: Split, lalu paksa hapus spasi DAN hapus tanda kutip sisa pembungkus env
+  const keys = keysString
+    .split(",")
+    .map((k) => k.trim().replace(/^["']|["']$/g, "")) // Sikat tanda kutip di ujung string
+    .filter(Boolean);
+
   if (keys.length === 0) {
     throw new Error("No valid Gemini API keys found");
   }
 
+  // Pilih acak dari key yang sudah bersih steril
   return keys[Math.floor(Math.random() * keys.length)]!;
 };
 
 const formatCapaian = (capaian: Record<string, string> | null) => {
   if (!capaian) return "Capaian pembelajaran tidak ditemukan.";
-  return Object.entries(capaian).map(([key, value]) => `- ${key}: ${value}`).join("\n");
+  return Object.entries(capaian)
+    .map(([key, value]) => `- ${key}: ${value}`)
+    .join("\n");
 };
 
 const cleanJsonText = (text: string) => {
   try {
-    const rawJson = text.replace(/\`\`\`json/g, "").replace(/\`\`\`/g, "").trim();
+    const rawJson = text
+      .replace(/\`\`\`json/g, "")
+      .replace(/\`\`\`/g, "")
+      .trim();
     const jsonMatch = rawJson.match(/\{[\s\S]*\}/);
     return jsonMatch ? jsonMatch[0].trim() : rawJson;
   } catch (error) {
@@ -41,7 +56,7 @@ const runAIGeneration = async (prompt: string) => {
   const primaryModel = process.env.GEMINI_MODEL || "gemini-3-flash-preview";
   const fallbackModel = "gemini-2.5-flash"; // Cadangan menggunakan seri 2.5
   const modelsToTry = [primaryModel, fallbackModel];
-  
+
   let lastError: unknown = null;
 
   for (const modelName of modelsToTry) {
@@ -57,7 +72,9 @@ const runAIGeneration = async (prompt: string) => {
       return JSON.parse(cleanJsonText(result.response.text()));
     } catch (error) {
       lastError = error;
-      console.warn(`[AI Engine] Model ${modelName} gagal, beralih ke cadangan...`);
+      console.warn(
+        `[AI Engine] Model ${modelName} gagal, beralih ke cadangan...`,
+      );
     }
   }
   console.error("[AI Engine] CRITICAL: Semua model gagal.", lastError);
@@ -69,8 +86,11 @@ const runAIGeneration = async (prompt: string) => {
 // ==========================================
 
 export const generateTPDraft = async (payload: GenerateTpInput) => {
-  const capaian = getCapaianByFaseAndSubject(payload.fase_kelas as FaseCode, payload.mapel);
-  
+  const capaian = getCapaianByFaseAndSubject(
+    payload.fase_kelas as FaseCode,
+    payload.mapel,
+  );
+
   const prompt = `
 Anda adalah ahli penyusun RPP Kurikulum Merdeka.
 Tugas: Buat 4-6 Tujuan Pembelajaran (TP) yang terukur mencakup Kognitif, Afektif, Psikomotorik.
@@ -119,7 +139,7 @@ OUTPUT WAJIB JSON VALID (TANPA MARKDOWN):
 
 export const generateModulDraft = async (payload: GenerateModulAjarInput) => {
   const atp = JSON.stringify(payload.alur_pertemuan);
-  
+
   const prompt = `
 Anda adalah ahli RPP Kurikulum Merdeka. Buat detail Modul Ajar berdasarkan ATP berikut:
 ${atp}
@@ -128,7 +148,7 @@ Konteks Umum: Mapel ${payload.mapel} (${payload.materi}), Sekolah: ${payload.sat
 Model Pembelajaran: ${payload.model_pembelajaran}.
 Fasilitas Terbatas: ${payload.fasilitas.join(", ")}.
 
-OUTPUT WAJIB JSON VALID (TANPA MARKDOWN):
+OUTPUT WAJIB JSON VALID (TANPA MARKDOWN). Susun array "lampiran_lkpd" sebagai panduan praktikum komprehensif seperti contoh berikut:
 {
   "identitas_modul": {
     "satuan_pendidikan": "${payload.satuan_pendidikan}",
@@ -151,7 +171,14 @@ OUTPUT WAJIB JSON VALID (TANPA MARKDOWN):
       { "kriteria": "", "mahir": "", "berkembang": "" }
     ]
   },
-  "lampiran_lkpd": ["Instruksi tugas..."]
+  "lampiran_lkpd": [
+    "A. TUJUAN PERCOBAAN: Menyelidiki hubungan antara gaya dan... (sesuaikan materi)",
+    "B. ALAT DAN BAHAN: 1. Alat A (1 buah)\\n2. Bahan B (Secukupnya)",
+    "C. PERCOBAAN AWAL (APERSEPSI): Diskusikan dalam kelompok: Jika kamu melihat fenomena [Isu Lokal] di sekitarmu, apa yang kamu rasakan?",
+    "D. LANGKAH PENGAMATAN / PROSEDUR KERJA: 1. Susunlah alat seperti...\\n2. Lakukan pengukuran pada...",
+    "E. DATA PENGAMATAN: Buatlah tabel yang berisi kolom massa, jarak, dan gaya...",
+    "F. PENYUSUNAN KONSEP & KESIMPULAN: Berdasarkan percobaan di atas, jelaskan perbandingan antara... Tuliskan kesimpulan akhirmu!"
+  ]
 }`;
   return await runAIGeneration(prompt);
 };

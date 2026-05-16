@@ -3,7 +3,7 @@ import { ApiError } from "../utils/api-error";
 import { HTTP_STATUS } from "../constants/http-status";
 
 type CreateModuleInput = {
-  authorId: string;
+  clerkUserId: string; // 🌟 Diubah agar sesuai dengan data dari Middleware Clerk
   judul_modul: string;
   jenjang: string;
   fase_kelas: string;
@@ -16,9 +16,22 @@ type CreateModuleInput = {
 
 export const createModuleService = async (input: CreateModuleInput) => {
   return prisma.$transaction(async (tx) => {
+    // 1. Cari user di database lokal (PostgreSQL) berdasarkan clerk_id
+    const user = await tx.user.findUnique({
+      where: { clerk_id: input.clerkUserId },
+    });
+
+    if (!user) {
+      throw new ApiError(
+        HTTP_STATUS.NOT_FOUND,
+        "User tidak ditemukan di database. Pastikan akun tersinkronisasi."
+      );
+    }
+
+    // 2. Buat Modul menggunakan UUID user lokal (user.id)
     const module = await tx.module.create({
       data: {
-        author_id: input.authorId,
+        author_id: user.id, // 🌟 Gunakan ID lokal, bukan clerkUserId
         judul_modul: input.judul_modul,
         jenjang: input.jenjang,
         fase_kelas: input.fase_kelas,
@@ -40,9 +53,10 @@ export const createModuleService = async (input: CreateModuleInput) => {
       },
     });
 
+    // 3. Tambah 50 XP jika statusnya langsung PUBLISHED (Berbagi ke Komunitas)
     if (module.status === "PUBLISHED") {
       await tx.user.update({
-        where: { id: input.authorId },
+        where: { id: user.id },
         data: { points: { increment: 50 } },
       });
     }
@@ -69,24 +83,36 @@ export const getModulesService = async () => {
   });
 };
 
-export const publishModuleService = async (moduleId: string, authorId: string) => {
-  const module = await prisma.module.findUnique({
-    where: { id: moduleId },
-  });
-
-  if (!module) {
-    throw new ApiError(HTTP_STATUS.NOT_FOUND, "Module not found");
-  }
-
-  if (module.author_id !== authorId) {
-    throw new ApiError(HTTP_STATUS.FORBIDDEN, "You are not the author of this module");
-  }
-
-  if (module.status === "PUBLISHED") {
-    throw new ApiError(HTTP_STATUS.BAD_REQUEST, "Module is already published");
-  }
-
+export const publishModuleService = async (moduleId: string, clerkUserId: string) => {
   return prisma.$transaction(async (tx) => {
+    // 1. Cari user lokal berdasarkan clerk_id
+    const user = await tx.user.findUnique({
+      where: { clerk_id: clerkUserId },
+    });
+
+    if (!user) {
+      throw new ApiError(HTTP_STATUS.NOT_FOUND, "User tidak ditemukan di database.");
+    }
+
+    // 2. Cari modul berdasarkan ID
+    const module = await tx.module.findUnique({
+      where: { id: moduleId },
+    });
+
+    if (!module) {
+      throw new ApiError(HTTP_STATUS.NOT_FOUND, "Module not found");
+    }
+
+    // 3. Validasi kepemilikan menggunakan UUID lokal
+    if (module.author_id !== user.id) {
+      throw new ApiError(HTTP_STATUS.FORBIDDEN, "You are not the author of this module");
+    }
+
+    if (module.status === "PUBLISHED") {
+      throw new ApiError(HTTP_STATUS.BAD_REQUEST, "Module is already published");
+    }
+
+    // 4. Update status modul jadi PUBLISHED
     const updatedModule = await tx.module.update({
       where: { id: moduleId },
       data: { status: "PUBLISHED" },
@@ -95,8 +121,9 @@ export const publishModuleService = async (moduleId: string, authorId: string) =
       },
     });
 
+    // 5. Tambahkan 50 XP ke user
     await tx.user.update({
-      where: { id: authorId },
+      where: { id: user.id },
       data: { points: { increment: 50 } },
     });
 

@@ -25,6 +25,16 @@ export const createModuleService = async (input: CreateModuleInput) => {
       content_json: input.content_json as object,
       status: input.status ?? "DRAFT",
     },
+    include: {
+      author: {
+        select: {
+          id: true,
+          name: true,
+          email: true,
+          image_url: true,
+        },
+      },
+    },
   });
 };
 
@@ -33,6 +43,22 @@ export const getModulesService = async () => {
     orderBy: {
       createdAt: "desc",
     },
+    include: {
+      author: {
+        select: {
+          id: true,
+          name: true,
+          email: true,
+          image_url: true,
+        },
+      },
+    },
+  });
+};
+
+export const getModuleByIdService = async (id: string) => {
+  return prisma.module.findUnique({
+    where: { id },
     include: {
       author: {
         select: {

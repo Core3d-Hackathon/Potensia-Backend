@@ -3,7 +3,11 @@ import { HTTP_STATUS } from "../constants/http-status";
 import { ApiError } from "../utils/api-error";
 import { sendSuccess } from "../utils/api-response";
 import { buildResponseMeta } from "../utils/response-meta";
-import { createModuleService, getModulesService } from "../services/modules.service";
+import {
+  createModuleService,
+  getModuleByIdService,
+  getModulesService,
+} from "../services/modules.service";
 import { prisma } from "../lib/prisma";
 
 export const createModule = async (req: Request, res: Response) => {
@@ -48,6 +52,21 @@ export const getModules = async (req: Request, res: Response) => {
     statusCode: HTTP_STATUS.OK,
     message: "Modules fetched successfully",
     data: modules,
+    meta: buildResponseMeta(req),
+  });
+};
+
+export const getModuleById = async (req: Request, res: Response) => {
+  const module = await getModuleByIdService(req.params.id);
+
+  if (!module) {
+    throw new ApiError(HTTP_STATUS.NOT_FOUND, "Module not found");
+  }
+
+  return sendSuccess(res, {
+    statusCode: HTTP_STATUS.OK,
+    message: "Module fetched successfully",
+    data: module,
     meta: buildResponseMeta(req),
   });
 };

@@ -659,6 +659,7 @@ Contoh Response:
   "data": {
     "totalPoints": 120,
     "totalModules": 8,
+    "totalUpvotes": 15,
     "recentModules": [
       {
         "id": "uuid",

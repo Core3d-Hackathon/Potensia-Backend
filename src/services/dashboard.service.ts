@@ -16,6 +16,11 @@ export const getDashboardDataService = async (clerkUserId: string) => {
     where: { author_id: user.id }, // HANYA menghitung jumlah modul milik user yang sedang login
   });
 
+  const upvotesAggregate = await prisma.module.aggregate({
+    where: { author_id: user.id },
+    _sum: { upvote_count: true },
+  });
+
   const recentModules = await prisma.module.findMany({
     where: { author_id: user.id }, // HANYA mengambil aktivitas/modul milik user sendiri
     orderBy: { createdAt: "desc" },
@@ -38,6 +43,7 @@ export const getDashboardDataService = async (clerkUserId: string) => {
   return {
     totalPoints: user.points,
     totalModules,
+    totalUpvotes: upvotesAggregate._sum.upvote_count || 0,
     recentModules,
   };
 };

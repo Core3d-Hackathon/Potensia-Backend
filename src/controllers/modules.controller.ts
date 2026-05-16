@@ -7,6 +7,7 @@ import {
   createModuleService,
   getModuleByIdService,
   getModulesService,
+  publishModuleService,
 } from "../services/modules.service";
 import { generateModuleDraft } from "../services/generate.service";
 import { prisma } from "../lib/prisma";
@@ -86,6 +87,30 @@ export const getModuleById = async (req: Request, res: Response) => {
   return sendSuccess(res, {
     statusCode: HTTP_STATUS.OK,
     message: "Module fetched successfully",
+    data: module,
+    meta: buildResponseMeta(req),
+  });
+};
+
+export const publishModule = async (req: Request, res: Response) => {
+  if (!req.auth?.clerkUserId) {
+    throw new ApiError(HTTP_STATUS.UNAUTHORIZED, "Unauthorized");
+  }
+
+  const user = await prisma.user.findUnique({
+    where: { clerk_id: req.auth.clerkUserId },
+  });
+
+  if (!user) {
+    throw new ApiError(HTTP_STATUS.NOT_FOUND, "Authenticated user not found");
+  }
+
+  const moduleId = getRequiredParam(req.params.id, "id");
+  const module = await publishModuleService(moduleId, user.id);
+
+  return sendSuccess(res, {
+    statusCode: HTTP_STATUS.OK,
+    message: "Module published successfully",
     data: module,
     meta: buildResponseMeta(req),
   });

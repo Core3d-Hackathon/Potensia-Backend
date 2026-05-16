@@ -288,7 +288,14 @@ Contoh response:
         "key": "sd",
         "label": "SD/MI",
         "faseCodes": ["A", "B", "C"],
-        "grades": ["Kelas 1", "Kelas 2", "Kelas 3", "Kelas 4", "Kelas 5", "Kelas 6"]
+        "grades": [
+          "Kelas 1",
+          "Kelas 2",
+          "Kelas 3",
+          "Kelas 4",
+          "Kelas 5",
+          "Kelas 6"
+        ]
       },
       {
         "key": "smp",
@@ -357,7 +364,14 @@ Contoh response:
       "key": "sd",
       "label": "SD/MI",
       "faseCodes": ["A", "B", "C"],
-      "grades": ["Kelas 1", "Kelas 2", "Kelas 3", "Kelas 4", "Kelas 5", "Kelas 6"]
+      "grades": [
+        "Kelas 1",
+        "Kelas 2",
+        "Kelas 3",
+        "Kelas 4",
+        "Kelas 5",
+        "Kelas 6"
+      ]
     },
     "fase": [
       {
@@ -452,7 +466,14 @@ Contoh response:
       "key": "sd",
       "label": "SD/MI",
       "faseCodes": ["A", "B", "C"],
-      "grades": ["Kelas 1", "Kelas 2", "Kelas 3", "Kelas 4", "Kelas 5", "Kelas 6"]
+      "grades": [
+        "Kelas 1",
+        "Kelas 2",
+        "Kelas 3",
+        "Kelas 4",
+        "Kelas 5",
+        "Kelas 6"
+      ]
     },
     "fase": {
       "code": "B",
@@ -479,6 +500,142 @@ Contoh response:
         "Analisis Data dan Peluang": "Peserta didik dapat mengurutkan, membandingkan..."
       }
     }
+  }
+}
+```
+
+### 6. Modules
+
+#### `GET /v1/modules`
+
+Mengambil seluruh daftar modul yang ada di database.
+
+Auth required: `No`
+
+#### `GET /v1/modules/:id`
+
+Mengambil detail dari sebuah modul berdasarkan UUID.
+
+Auth required: `No`
+
+#### `POST /v1/modules`
+
+Menyimpan modul baru ke database.
+
+Auth required: `Yes`
+
+Header:
+
+```http
+Authorization: Bearer <clerk_token>
+```
+
+Contoh Request Body:
+
+```json
+{
+  "judul_modul": "Modul Matematika SD",
+  "jenjang": "sd",
+  "fase_kelas": "A",
+  "mapel": "Matematika",
+  "materi": "Bilangan",
+  "kategori_wilayah": "Pesisir",
+  "content_json": {},
+  "status": "DRAFT"
+}
+```
+
+#### `POST /v1/modules/:id/publish`
+
+Mengubah status modul dari `DRAFT` menjadi `PUBLISHED`. Author akan secara otomatis mendapatkan **+50 Poin**. Hanya author pemilik modul yang bisa melakukan aksi ini.
+
+Auth required: `Yes`
+
+#### `POST /v1/modules/generate`
+
+Menghasilkan draft Modul Ajar dan ATP menggunakan Google Gemini AI berdasarkan _prompt_ dan _Capaian Pembelajaran_.
+
+Auth required: `No` (saat ini)
+
+Contoh Request Body:
+
+```json
+{
+  "jenjang": "sd",
+  "fase_kelas": "A",
+  "mapel": "Matematika",
+  "materi": "Bilangan",
+  "tema": "Bermain Angka",
+  "alokasi_waktu": "2 JP",
+  "jumlah_aktivitas": 3
+}
+```
+
+Contoh Response:
+
+```json
+{
+  "success": true,
+  "message": "Module draft generated successfully",
+  "data": {
+    "dokumen": { ... },
+    "identitas": { ... },
+    "atp": { ... },
+    "modul_ajar": { ... }
+  }
+}
+```
+
+### 7. Community
+
+#### `GET /v1/community`
+
+Mengambil daftar modul dari seluruh user yang statusnya **"PUBLISHED"** untuk ditampilkan di halaman komunitas. Hasil kembalian akan otomatis diacak (_shuffled_).
+
+Auth required: `No`
+
+Query Parameters (Semua Opsional):
+
+- `search`: mencari kata di judul, mapel, atau materi (contoh: `?search=bilangan`)
+- `jenjang`
+- `fase_kelas`
+- `mapel`
+- `materi`
+- `kategori_wilayah`
+
+#### `POST /v1/community/:id/upvote`
+
+Melakukan aksi **Upvote** pada sebuah modul komunitas. Aksi ini bersifat _toggle_ (jika sudah di-upvote, maka memanggil ini lagi akan menghapus upvote-nya).
+Setiap upvote memberikan **+10 Poin** kepada author modul tersebut.
+
+Auth required: `Yes`
+
+Header:
+
+```http
+Authorization: Bearer <clerk_token>
+```
+
+Contoh Response (Jika Upvote Berhasil):
+
+```json
+{
+  "success": true,
+  "message": "Module upvoted successfully",
+  "data": {
+    "upvoted": true
+  }
+}
+```
+
+Contoh Response (Jika Upvote Dibatalkan):
+
+```json
+{
+  "success": true,
+  "message": "Module upvote removed",
+  "data": {
+    "upvoted": false
   }
 }
 ```
@@ -522,6 +679,13 @@ GET /v1/curriculum/fase/B/subjects/Matematika/capaian
 - `GET /v1/curriculum/jenjang/:jenjangKey/fase`
 - `GET /v1/curriculum/fase/:faseCode/subjects`
 - `GET /v1/curriculum/fase/:faseCode/subjects/:subjectName/capaian`
+- `GET /v1/modules`
+- `GET /v1/modules/:id`
+- `POST /v1/modules`
+- `POST /v1/modules/:id/publish`
+- `POST /v1/modules/generate`
+- `GET /v1/community`
+- `POST /v1/community/:id/upvote`
 
 ## Catatan Penting
 

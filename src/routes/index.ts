@@ -4,11 +4,13 @@ import curriculumRouter from "./curriculum.route";
 import healthRouter from "./health.route";
 import leaderboardRouter from "./leaderboard.route";
 import modulesRouter from "./modules.route";
+import communityRouter from "./community.route";
 
 const apiRouter = Router();
 
 apiRouter.use("/health", healthRouter);
 apiRouter.use("/auth", authRouter);
+apiRouter.use("/community", communityRouter);
 apiRouter.use("/curriculum", curriculumRouter);
 apiRouter.use("/leaderboard", leaderboardRouter);
 apiRouter.use("/modules", modulesRouter);

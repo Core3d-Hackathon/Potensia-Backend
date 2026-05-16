@@ -6,6 +6,7 @@ import {
   generateModule,
   getModuleById,
   getModules,
+  publishModule,
 } from "../controllers/modules.controller";
 import { validateRequest } from "../middleware/validate-request";
 import { createModuleSchema, moduleIdParamSchema } from "../schemas/module.schema";
@@ -22,8 +23,15 @@ modulesRouter.get(
 );
 
 modulesRouter.post(
+  "/:id/publish",
+  authenticate,
+  validateRequest(moduleIdParamSchema),
+  asyncHandler(publishModule),
+);
+
+modulesRouter.post(
   "/generate",
-  validateRequest({ body: generateModuleSchema }),
+  validateRequest(generateModuleSchema),
   asyncHandler(generateModule),
 );
 

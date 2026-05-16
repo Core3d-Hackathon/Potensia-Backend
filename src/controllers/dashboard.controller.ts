@@ -12,6 +12,8 @@ export const getDashboardData = async (req: Request, res: Response) => {
 
   const data = await getDashboardDataService(req.auth.clerkUserId);
 
+  console.log("Output API Dashboard:", data);
+
   return sendSuccess(res, {
     statusCode: HTTP_STATUS.OK,
     message: "Dashboard data fetched successfully",

@@ -551,40 +551,29 @@ Mengubah status modul dari `DRAFT` menjadi `PUBLISHED`. Author akan secara otoma
 
 Auth required: `Yes`
 
-#### `POST /v1/modules/generate`
+#### `PATCH /v1/modules/:id`
 
-Menghasilkan draft Modul Ajar dan ATP menggunakan Google Gemini AI berdasarkan _prompt_ dan _Capaian Pembelajaran_.
+Mengubah/update data modul yang sudah ada (termasuk status dan `content_json`). Bisa digunakan untuk menyimpan auto-save atau update status.
 
-Auth required: `No` (saat ini)
+Auth required: `Yes`
 
-Contoh Request Body:
+#### `POST /v1/modules/generate/tp`
 
-```json
-{
-  "jenjang": "sd",
-  "fase_kelas": "A",
-  "mapel": "Matematika",
-  "materi": "Bilangan",
-  "tema": "Bermain Angka",
-  "alokasi_waktu": "2 JP",
-  "jumlah_aktivitas": 3
-}
-```
+Menghasilkan draf Tujuan Pembelajaran (TP) menggunakan AI.
 
-Contoh Response:
+Auth required: `No`
 
-```json
-{
-  "success": true,
-  "message": "Module draft generated successfully",
-  "data": {
-    "dokumen": { ... },
-    "identitas": { ... },
-    "atp": { ... },
-    "modul_ajar": { ... }
-  }
-}
-```
+#### `POST /v1/modules/generate/atp`
+
+Menghasilkan Alur Tujuan Pembelajaran (ATP) menggunakan AI.
+
+Auth required: `No`
+
+#### `POST /v1/modules/generate/modul`
+
+Menghasilkan Modul Ajar dan panduan LKPD lengkap menggunakan AI.
+
+Auth required: `No`
 
 ### 7. Community
 
@@ -602,6 +591,10 @@ Query Parameters (Semua Opsional):
 - `mapel`
 - `materi`
 - `kategori_wilayah`
+- `sortBy`: Pengurutan data (`random` | `popular` | `newest`). Default: `random`.
+- `limit`: Jumlah data maksimal yang dikembalikan (maksimal `100`). Default: `50`.
+
+*Catatan: Endpoint ini menggunakan prisma `select`, sehingga tidak mengembalikan payload `content_json` yang berat untuk mempercepat waktu loading list di Frontend.*
 
 #### `POST /v1/community/:id/upvote`
 
@@ -683,7 +676,10 @@ GET /v1/curriculum/fase/B/subjects/Matematika/capaian
 - `GET /v1/modules/:id`
 - `POST /v1/modules`
 - `POST /v1/modules/:id/publish`
-- `POST /v1/modules/generate`
+- `PATCH /v1/modules/:id`
+- `POST /v1/modules/generate/tp`
+- `POST /v1/modules/generate/atp`
+- `POST /v1/modules/generate/modul`
 - `GET /v1/community`
 - `POST /v1/community/:id/upvote`
 

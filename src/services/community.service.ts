@@ -9,10 +9,33 @@ type GetCommunityModulesQuery = {
   mapel?: string;
   materi?: string;
   kategori_wilayah?: string;
+  sortBy?: string;
+  limit?: string;
 };
 
 export const getCommunityModulesService = async (query: GetCommunityModulesQuery) => {
-  const { search, jenjang, fase_kelas, mapel, materi, kategori_wilayah } = query;
+  const {
+    search,
+    jenjang,
+    fase_kelas,
+    mapel,
+    materi,
+    kategori_wilayah,
+    sortBy,
+    limit,
+  } = query;
+
+  // 🌟 MANUAL PARSING: Mencegah Zod Crash 🌟
+  let parsedSortBy = "random";
+  if (sortBy === "popular" || sortBy === "newest") {
+    parsedSortBy = sortBy;
+  }
+
+  let parsedLimit = 50;
+  if (limit) {
+    const num = parseInt(limit, 10);
+    if (!isNaN(num) && num > 0) parsedLimit = Math.min(num, 100);
+  }
 
   const where: any = {
     status: "PUBLISHED", // Hanya tampilkan modul yang publik untuk komunitas
@@ -32,21 +55,42 @@ export const getCommunityModulesService = async (query: GetCommunityModulesQuery
   if (materi) where.materi = materi;
   if (kategori_wilayah) where.kategori_wilayah = kategori_wilayah;
 
+  let orderBy: any = undefined;
+  if (parsedSortBy === "popular") {
+    orderBy = { upvote_count: "desc" };
+  } else if (parsedSortBy === "newest") {
+    orderBy = { createdAt: "desc" };
+  }
+
   const modules = await prisma.module.findMany({
     where,
-    include: {
+    orderBy,
+    take: parsedLimit,
+    select: {
+      id: true,
+      judul_modul: true,
+      jenjang: true,
+      fase_kelas: true,
+      mapel: true,
+      materi: true,
+      kategori_wilayah: true,
+      upvote_count: true,
+      createdAt: true,
+      updatedAt: true,
       author: {
         select: { id: true, name: true, email: true, image_url: true },
       },
     },
   });
 
-  // Acak urutan array (Fisher-Yates Shuffle) untuk memberikan hasil random
-  for (let i = modules.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    const temp = modules[i]!;
-    modules[i] = modules[j]!;
-    modules[j] = temp;
+  if (parsedSortBy === "random") {
+    // Acak urutan array (Fisher-Yates Shuffle) jika mode pencariannya random
+    for (let i = modules.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      const temp = modules[i]!;
+      modules[i] = modules[j]!;
+      modules[j] = temp;
+    }
   }
 
   return modules;

@@ -1,9 +1,15 @@
 import { Router } from "express";
 import { authenticate } from "../middleware/authenticate";
 import { asyncHandler } from "../utils/async-handler";
-import { getCommunityModules, toggleUpvoteModule } from "../controllers/community.controller";
+import {
+  getCommunityModules,
+  toggleUpvoteModule,
+} from "../controllers/community.controller";
 import { validateRequest } from "../middleware/validate-request";
-import { getCommunityModulesSchema, upvoteModuleSchema } from "../schemas/community.schema";
+import {
+  getCommunityModulesSchema,
+  upvoteModuleSchema,
+} from "../schemas/community.schema";
 
 const communityRouter = Router();
 

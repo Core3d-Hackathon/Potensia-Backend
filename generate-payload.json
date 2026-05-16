@@ -1,0 +1,15 @@
+{
+  "jenjang": "SD",
+  "fase_kelas": "C",
+  "mapel": "IPAS",
+  "materi": "Ekosistem",
+  "kategori_wilayah": "Pesisir",
+  "kearifan_lokal": "Tradisi nelayan pukat tradisional",
+  "isu_lokal": "Abrasi pantai",
+  "fasilitas": ["Internet tidak stabil", "Proyektor tidak ada"],
+  "gaya_belajar": ["Visual", "Kinestetik"],
+  "latar_belakang_siswa": "Mayoritas anak nelayan membantu orang tua sepulang sekolah",
+  "model_pembelajaran": "Project Based Learning",
+  "jenis_asesmen": ["Observasi", "Portofolio"],
+  "alokasi_waktu": "4 JP"
+}

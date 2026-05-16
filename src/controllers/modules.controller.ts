@@ -8,6 +8,7 @@ import {
   getModuleByIdService,
   getModulesService,
 } from "../services/modules.service";
+import { generateModuleDraft } from "../services/generate.service";
 import { prisma } from "../lib/prisma";
 
 export const createModule = async (req: Request, res: Response) => {
@@ -67,6 +68,17 @@ export const getModuleById = async (req: Request, res: Response) => {
     statusCode: HTTP_STATUS.OK,
     message: "Module fetched successfully",
     data: module,
+    meta: buildResponseMeta(req),
+  });
+};
+
+export const generateModule = async (req: Request, res: Response) => {
+  const draft = await generateModuleDraft(req.body);
+
+  return sendSuccess(res, {
+    statusCode: HTTP_STATUS.OK,
+    message: "Module draft generated successfully",
+    data: draft,
     meta: buildResponseMeta(req),
   });
 };

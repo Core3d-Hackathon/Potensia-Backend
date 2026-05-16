@@ -1,0 +1,22 @@
+{
+  // Visit https://aka.ms/tsconfig to read more about this file
+  "compilerOptions": {
+    "rootDir": "./src",
+    "outDir": "./dist",
+
+    "module": "Node16",
+    "target": "es2020",
+    "lib": ["es2020"],
+    "types": ["node"],
+
+    // Other Outputs
+    "sourceMap": true,
+    "noUncheckedIndexedAccess": true,
+    "exactOptionalPropertyTypes": true,
+    "strict": true,
+    "esModuleInterop": true,
+    "moduleResolution": "node16",
+    "skipLibCheck": true,
+  },
+  "include": ["src/**/*.ts"]
+}

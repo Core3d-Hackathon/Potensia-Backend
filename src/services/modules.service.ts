@@ -5,6 +5,7 @@ import { HTTP_STATUS } from "../constants/http-status";
 type CreateModuleInput = {
   clerkUserId: string; // 🌟 Diubah agar sesuai dengan data dari Middleware Clerk
   judul_modul: string;
+  asal_sekolah?: string;
   jenjang: string;
   fase_kelas: string;
   mapel: string;
@@ -33,6 +34,7 @@ export const createModuleService = async (input: CreateModuleInput) => {
       data: {
         author_id: user.id, // 🌟 Gunakan ID lokal, bukan clerkUserId
         judul_modul: input.judul_modul,
+        asal_sekolah: input.asal_sekolah,
         jenjang: input.jenjang,
         fase_kelas: input.fase_kelas,
         mapel: input.mapel,
@@ -195,6 +197,7 @@ export const updateModuleService = async (
       where: { id },
       data: {
         judul_modul: data.judul_modul ?? module.judul_modul,
+        asal_sekolah: data.asal_sekolah ?? module.asal_sekolah,
         status: data.status ?? module.status,
         content_json: (data.content_json ?? module.content_json) as object,
       },

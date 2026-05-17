@@ -17,7 +17,6 @@ model User {
   name      String
   email     String       @unique
   image_url String?
-  asal_sekolah String?
   points    Int          @default(0)
   createdAt DateTime     @default(now())
 
@@ -29,6 +28,7 @@ model Module {
   id               String       @id @default(uuid())
   author_id        String
   judul_modul      String
+  asal_sekolah     String?
   jenjang          String
   fase_kelas       String
   mapel            String

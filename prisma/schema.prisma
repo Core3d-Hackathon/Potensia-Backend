@@ -17,6 +17,7 @@ model User {
   name      String
   email     String       @unique
   image_url String?
+  asal_sekolah String?
   points    Int          @default(0)
   createdAt DateTime     @default(now())
 

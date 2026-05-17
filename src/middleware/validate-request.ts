@@ -15,16 +15,18 @@ export const validateRequest = (schema: RequestSchema) => {
       }
 
       if (schema.query) {
-        req.query = schema.query.parse(req.query) as Request["query"];
+        const parsedQuery = schema.query.parse(req.query) as Request["query"];
+        Object.assign(req.query, parsedQuery);
       }
 
       if (schema.params) {
-        req.params = schema.params.parse(req.params) as Request["params"];
+        const parsedParams = schema.params.parse(req.params) as Request["params"];
+        Object.assign(req.params, parsedParams);
       }
 
       next();
     } catch (error) {
-      next(error instanceof ZodError ? error : new ZodError([]));
+      next(error);
     }
   };
 };

@@ -84,6 +84,7 @@ export const createModule = async (req: Request, res: Response) => {
   const module = await createModuleService({
     clerkUserId: clerkUserId,
     judul_modul: req.body.judul_modul,
+    asal_sekolah: req.body.asal_sekolah,
     jenjang: req.body.jenjang,
     fase_kelas: req.body.fase_kelas,
     mapel: req.body.mapel,

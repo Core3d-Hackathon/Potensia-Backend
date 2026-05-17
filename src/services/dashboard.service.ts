@@ -28,6 +28,7 @@ export const getDashboardDataService = async (clerkUserId: string) => {
     select: {
       id: true,
       judul_modul: true,
+      asal_sekolah: true,
       jenjang: true,
       fase_kelas: true,
       mapel: true,

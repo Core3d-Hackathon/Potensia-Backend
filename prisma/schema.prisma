@@ -28,6 +28,7 @@ model Module {
   id               String       @id @default(uuid())
   author_id        String
   judul_modul      String
+  asal_sekolah     String?
   jenjang          String
   fase_kelas       String
   mapel            String
